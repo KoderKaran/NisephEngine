@@ -30,8 +30,6 @@ public class CustomTabBtn extends JPanel implements MouseListener {
 		//TODO: Eventually do some safety checks to see if tlX and tlY are 0,0 so they don't go negative when - padX or
 		// - padY.
 
-		//TODO: BUG - If component is offscreen and this is called on it, exception is called. Therefore, do a check to
-		// make sure that component is on screen or smthing like that.
 		int padX = 10;
 		int padY = 10;
 		int screenSpaceX = this.getLocationOnScreen().x;
