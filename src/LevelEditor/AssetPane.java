@@ -3,28 +3,27 @@ package LevelEditor;
 //TODO: Don't import EVERYTHING.
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeModel;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class AssetPane extends JPanel {
 
     private JTree projectHierarchy;
     private JScrollPane treeView;
-    private JScrollPane assetHolder;
+    private JScrollPane assetTilePane;
     private JPanel utilityPanel; //Flow layout this john.
 
     public AssetPane() {
         setLayout(new BorderLayout());
         //https://tinyurl.com/t6v6pky
+        String rootPath = "C:\\Users\\The-Beast\\Documents\\GitHub\\NisephEngine";
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String rootPath = "C:\\Users\\The-Beast\\Documents\\GitHub\\NisephEngine";
                 DefaultMutableTreeNode root =
                         new DefaultMutableTreeNode(rootPath);
                 addChildNode(root, new File(rootPath));
@@ -40,7 +39,13 @@ public class AssetPane extends JPanel {
             }
         }).start();
 
-
+        //JUST FOR TESTING//
+        Sprite testSprite = new Sprite(rootPath + "\\res\\64x64.png");
+        AssetTileComponent testTileComponent = new AssetTileComponent(testSprite, testSprite.getImageTitle(),
+                (BufferedImage) testSprite.getAssetData());
+        assetTilePane = new JScrollPane(testTileComponent);
+        add(assetTilePane);
+        //JUST FOR TESTING//
     }
 
 
