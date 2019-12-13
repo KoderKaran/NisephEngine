@@ -75,7 +75,7 @@ public class CustomTabBtn extends JPanel implements MouseListener {
         Rectangle paneScreenSpaceBounds = new Rectangle(paneTL.x, paneTL.y, pane.getWidth(), pane.getHeight() );
         //Check to see if new window should open
 
-        //We need to build a way to detect whether this is the main window or if it is a JDialogue.
+        //We need to build a way to detect whetheqr this is the main window or if it is a JDialogue.
         //If src is mainWindow AND tabCount > 1.
         Component compMouseIn = DnDHelper.getComponentMouseIn();
         if(pane.getTabCount() != 1 && compMouseIn != null){
@@ -87,7 +87,7 @@ public class CustomTabBtn extends JPanel implements MouseListener {
                     !pane.equals(((CustomTabBtn) compMouseIn).getParentTabbedPane())) {
                 this.DnDOnCustomTab();
             }
-        } else if(!pane.isMainPane() && pane.getTabCount() ==  1 && compMouseIn != this &&
+        } else if(!pane.isMainPane() && pane.getTabCount() ==  1 && compMouseIn != this && compMouseIn != pane &&
                 (compMouseIn instanceof LevelTabbedPane || compMouseIn instanceof CustomTabBtn)){
             JDialog window = (JDialog) SwingUtilities.windowForComponent(pane);
             //TODO: Make into private helper method.

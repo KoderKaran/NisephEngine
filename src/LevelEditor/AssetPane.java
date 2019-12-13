@@ -6,7 +6,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -14,8 +13,11 @@ public class AssetPane extends JPanel {
 
     private JTree projectHierarchy;
     private JScrollPane treeView;
-    private JScrollPane assetTilePane;
+    private JScrollPane scrollAssetTilePane;
+    private JPanel assetTilePane;
     private JPanel utilityPanel; //Flow layout this john.
+    private JButton uploadButton;
+    private JMenuBar pathToDirectory;
 
     public AssetPane() {
         setLayout(new BorderLayout());
@@ -41,11 +43,26 @@ public class AssetPane extends JPanel {
 
         //JUST FOR TESTING//
         Sprite testSprite = new Sprite(rootPath + "\\res\\64x64.png");
-        AssetTileComponent testTileComponent = new AssetTileComponent(testSprite, testSprite.getImageTitle(),
-                (BufferedImage) testSprite.getAssetData());
-        assetTilePane = new JScrollPane(testTileComponent);
+
+        assetTilePane = new JPanel();
+        for(int i = 0; i < 100;i++){
+            assetTilePane.add(new AssetTileComponent(testSprite, testSprite.getImageTitle(),
+                    (BufferedImage) testSprite.getAssetData()));
+        }
+        scrollAssetTilePane = new JScrollPane(assetTilePane);
+        scrollAssetTilePane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         add(assetTilePane);
+
         //JUST FOR TESTING//
+        utilityPanel = new JPanel();
+        uploadButton = new JButton("Upload");
+        utilityPanel.add(uploadButton);
+        add(utilityPanel, BorderLayout.EAST);
+
+        JMenu test = new JMenu("Test");
+        pathToDirectory = new JMenuBar();
+        pathToDirectory.add(test);
+        add(pathToDirectory, BorderLayout.NORTH);
     }
 
 

@@ -20,5 +20,4 @@ public class AssetTileComponent extends JPanel {
         JLabel tileLabel = new JLabel(tileString);
         add(tileLabel, BorderLayout.SOUTH);
     }
-
 }

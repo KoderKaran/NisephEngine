@@ -46,16 +46,12 @@ public class LevelEditor {
         }
 
         JPanel tab1 = new JPanel();
-        tab1.setPreferredSize(new Dimension(300,200));
         tab1.setName("tab1_JPanel");
         JPanel tab2 = new JPanel();
-        tab2.setPreferredSize(new Dimension(300,200));
         tab2.setName("tab2_JPanel");
         JPanel tab3 = new JPanel();
-        tab3.setPreferredSize(new Dimension(300,200));
         tab3.setName("tab3_JPanel");
         JPanel tab4 = new JPanel();
-        tab4.setPreferredSize(new Dimension(300,200));
         tab4.setName("tab4_JPanel");
 
         Dimension tabSize = new Dimension(200, 30);
