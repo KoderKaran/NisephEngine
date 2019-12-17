@@ -62,13 +62,15 @@ public class LevelEditor {
         levelPane.addTab("Tab 2", tab2);
         levelPane.addTab("Tab 3", tab3);
         levelPane.addTab("Tab 4", tab4);
-
+        MenuBar menu = new MenuBar();
         AssetPane assetManager = new AssetPane();
         utilityPane.addTab("Asset Manager", assetManager);
         JFrame frame = new JFrame("Level Editor");
+        menu.addToFrame(frame);
         frame.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(true);
+        frame.add(menu, BorderLayout.SOUTH);
         frame.setLayout(new BorderLayout());
         frame.add(levelPane, BorderLayout.NORTH);
         frame.add(utilityPane, BorderLayout.SOUTH);

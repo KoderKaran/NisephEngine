@@ -26,7 +26,7 @@ public class AssetPane extends JPanel {
     public AssetPane() {
         setLayout(new BorderLayout());
         //https://tinyurl.com/t6v6pky
-        String rootPath = "C:\\Users\\The-Beast\\Documents\\GitHub\\NisephEngine";
+        String rootPath = System.getProperty("user.dir");
         new Thread(new Runnable() {
             @Override
             public void run() {
