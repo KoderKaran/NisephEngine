@@ -29,7 +29,6 @@ public class LevelEditor {
                         } else if (mouseEvent.getID() == MouseEvent.MOUSE_EXITED) {
                             DnDHelper.setComponentMouseIn(null);
                         }
-
                     }
                 }
             }, AWTEvent.MOUSE_EVENT_MASK);
@@ -56,6 +55,8 @@ public class LevelEditor {
 
         Dimension tabSize = new Dimension(200, 30);
         LevelTabbedPane levelPane = new LevelTabbedPane(LevelTabbedPane.POPOUT_WINDOW_SIZE, tabSize, true);
+        LevelTabbedPane utilityPane = new LevelTabbedPane(LevelTabbedPane.POPOUT_WINDOW_SIZE, tabSize, true);
+        utilityPane.setTabPlacement(JTabbedPane.BOTTOM);
 
         levelPane.addTab("Tab 1", tab1);
         levelPane.addTab("Tab 2", tab2);
@@ -63,14 +64,14 @@ public class LevelEditor {
         levelPane.addTab("Tab 4", tab4);
 
         AssetPane assetManager = new AssetPane();
-
+        utilityPane.addTab("Asset Manager", assetManager);
         JFrame frame = new JFrame("Level Editor");
         frame.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(true);
         frame.setLayout(new BorderLayout());
         frame.add(levelPane, BorderLayout.NORTH);
-        frame.add(assetManager, BorderLayout.SOUTH);
+        frame.add(utilityPane, BorderLayout.SOUTH);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

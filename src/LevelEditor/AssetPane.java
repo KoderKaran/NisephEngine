@@ -2,8 +2,12 @@ package LevelEditor;
 
 //TODO: Don't import EVERYTHING.
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Files;
@@ -14,7 +18,7 @@ public class AssetPane extends JPanel {
     private JTree projectHierarchy;
     private JScrollPane treeView;
     private JScrollPane scrollAssetTilePane;
-    private JPanel assetTilePane;
+    private AssetTilePane assetTilePane;
     private JPanel utilityPanel; //Flow layout this john.
     private JButton uploadButton;
     private JMenuBar pathToDirectory;
@@ -44,14 +48,20 @@ public class AssetPane extends JPanel {
         //JUST FOR TESTING//
         Sprite testSprite = new Sprite(rootPath + "\\res\\64x64.png");
 
-        assetTilePane = new JPanel();
-        for(int i = 0; i < 100;i++){
-            assetTilePane.add(new AssetTileComponent(testSprite, testSprite.getImageTitle(),
-                    (BufferedImage) testSprite.getAssetData()));
+        //TODO: Big todo, have to implement custom layout that implement's wrap around feature for components.
+        assetTilePane = new AssetTilePane();
+
+        for(int i = 0; i < 100; i++){
+            AssetTileComponent component = new AssetTileComponent(testSprite, testSprite.getImageTitle(),
+                    (BufferedImage) testSprite.getAssetData(), assetTilePane);
+            assetTilePane.add(component);
         }
         scrollAssetTilePane = new JScrollPane(assetTilePane);
-        scrollAssetTilePane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        add(assetTilePane);
+        scrollAssetTilePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollAssetTilePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollAssetTilePane.setWheelScrollingEnabled(true);
+
+        add(scrollAssetTilePane);
 
         //JUST FOR TESTING//
         utilityPanel = new JPanel();
