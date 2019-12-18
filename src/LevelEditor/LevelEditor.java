@@ -3,8 +3,8 @@ package LevelEditor;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 
 
 public class LevelEditor {
@@ -13,7 +13,9 @@ public class LevelEditor {
     private static final int  WIDTH = (int)(800 * SCALE);
     private static final int  HEIGHT = (int)(600 * SCALE);
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
+        TempSaver tempSaver = new TempSaver("Hello");
+        tempSaver.updateTempConfig();
         UIManager.put("TabbedPane.tabInsets", new Insets(0, 0, 0, 0)); // This is like...amazing.
         UIManager.put("TabbedPane.tabAreaInsets", new Insets(0, 0, 0, 0)); // This is like...amazing.
         UIManager.put("TabbedPane.selectedTabPadInsets",  new Insets(0, 0, 0, 0));
