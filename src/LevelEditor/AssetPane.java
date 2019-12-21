@@ -2,24 +2,21 @@ package LevelEditor;
 
 //TODO: Don't import EVERYTHING.
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class AssetPane extends JPanel {
 
     private JTree projectHierarchy;
     private JScrollPane treeView;
     private JScrollPane scrollAssetTilePane;
-    private AssetTilePane assetTilePane;
+    private FileTilePane fileTilePane;
     private JPanel utilityPanel; //Flow layout this john.
+    private JPanel assetPaneContainer;
     private JButton uploadButton;
     private JMenuBar pathToDirectory;
 
@@ -27,6 +24,7 @@ public class AssetPane extends JPanel {
         setLayout(new BorderLayout());
         //https://tinyurl.com/t6v6pky
         String rootPath = System.getProperty("user.dir");
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -49,30 +47,25 @@ public class AssetPane extends JPanel {
         Sprite testSprite = new Sprite(rootPath + "\\res\\64x64.png");
 
         //TODO: Big todo, have to implement custom layout that implement's wrap around feature for components.
-        assetTilePane = new AssetTilePane();
 
-        for(int i = 0; i < 100; i++){
-            AssetTileComponent component = new AssetTileComponent(testSprite, testSprite.getImageTitle(),
-                    (BufferedImage) testSprite.getAssetData(), assetTilePane);
-            assetTilePane.add(component);
-        }
-        scrollAssetTilePane = new JScrollPane(assetTilePane);
+        assetPaneContainer = new JPanel(new BorderLayout());
+        fileTilePane = new FileTilePane(rootPath);
+        assetPaneContainer.add(fileTilePane.getDirectoryBar(), BorderLayout.NORTH);
+
+
+        scrollAssetTilePane = new JScrollPane(fileTilePane);
         scrollAssetTilePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollAssetTilePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollAssetTilePane.setWheelScrollingEnabled(true);
 
-        add(scrollAssetTilePane);
-
+        assetPaneContainer.add(scrollAssetTilePane, BorderLayout.CENTER);
+        add(assetPaneContainer);
         //JUST FOR TESTING//
         utilityPanel = new JPanel();
         uploadButton = new JButton("Upload");
         utilityPanel.add(uploadButton);
         add(utilityPanel, BorderLayout.EAST);
 
-        JMenu test = new JMenu("Test");
-        pathToDirectory = new JMenuBar();
-        pathToDirectory.add(test);
-        add(pathToDirectory, BorderLayout.NORTH);
     }
 
 
