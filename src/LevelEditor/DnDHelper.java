@@ -8,7 +8,7 @@ public class DnDHelper {
 
     public static void setComponentMouseIn(Component componentMouseIn) {
         DnDHelper.componentMouseIn = componentMouseIn;
-        System.out.println("Set component to: " + componentMouseIn);
+//        System.out.println("Set component to: " + componentMouseIn);
     }
 
     public static Component getComponentMouseIn() {
