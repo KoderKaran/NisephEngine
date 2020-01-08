@@ -4,11 +4,14 @@ package LevelEditor;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class FileTileComponent extends JPanel {
 
@@ -21,7 +24,6 @@ public class FileTileComponent extends JPanel {
     private static ImageIcon defaultFolderIcon;
 
     static {
-
         try {
             String pathToFolder = System.getProperty("user.dir") + "\\res";
             defaultFileIcon = new ImageIcon(ImageIO.read(new File(pathToFolder + "\\default.png"))
@@ -78,12 +80,14 @@ public class FileTileComponent extends JPanel {
                 add(new JLabel(tileIcon), BorderLayout.CENTER);
                 JLabel tileLabel = new JLabel(tileString);
                 add(tileLabel, BorderLayout.SOUTH);
-                 // TODO: Better way to do this?
+                FileTileTransferHandler transferHandler = new FileTileTransferHandler();
+                setTransferHandler(new FileTileTransferHandler());
                 addMouseListener(new MouseAdapter() {
                     @Override
                     public void mousePressed(MouseEvent e) {
                         parentTilePane.setSelectedTile(thisTile);
                         parentTilePane.repaint();
+                        transferHandler.exportAsDrag(thisTile, e, TransferHandler.MOVE);
                     }
                 });
             }
@@ -97,6 +101,47 @@ public class FileTileComponent extends JPanel {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setColor(new Color(70, 170, 255, 65));
             g2d.fillRect(0, 0, getWidth() + 10, getHeight() + 10);
+        }
+    }
+
+    private class FileTileTransferHandler extends TransferHandler {
+
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            return new AssetTransfarble();
+        }
+
+        @Override
+        public int getSourceActions( JComponent c ) {
+            return MOVE;
+        }
+
+        @Override
+        protected void exportDone( JComponent source, Transferable data, int action ) {
+            super.exportDone( source, data, action );
+        }
+    }
+
+    private class AssetTransfarble implements Transferable{
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{ DataFlavor.javaFileListFlavor };
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            if(flavor.equals(DataFlavor.javaFileListFlavor)){
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            ArrayList<File> file = new ArrayList<File>();
+            file.add(tileFile);
+            return file;
         }
     }
 }

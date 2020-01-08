@@ -1,9 +1,17 @@
 package LevelEditor;
 
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -12,7 +20,7 @@ public class Screen extends Canvas implements ComponentListener {
     private int pixels[];
     private Thread thread;
     private AtomicBoolean keepRendering = new AtomicBoolean(true);
-    private ReentrantLock imageLock;
+    private ReentrantLock imageLock; // Use this lock anywhere that screenWidth and screenHeight are used.
     private int screenWidth;
     private int screenHeight;
     private BufferedImage image;
@@ -23,6 +31,37 @@ public class Screen extends Canvas implements ComponentListener {
         image = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB);
         pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
         imageLock = new ReentrantLock(true);
+        Screen thisScreen = this;
+        setDropTarget(new DropTarget() {
+            public void drop(DropTargetDropEvent evt) {
+                if(evt.isDataFlavorSupported(DataFlavor.javaFileListFlavor) && evt.isLocalTransfer()){
+                    Point dropLocation = evt.getLocation();
+                    imageLock.lock();
+                    try{
+                        Rectangle screenRect = new Rectangle(0, 0, thisScreen.getWidth(), thisScreen.getHeight());
+                        if (screenRect.contains(evt.getLocation())) {
+                            try {
+                                evt.acceptDrop(DnDConstants.ACTION_MOVE);
+                                ArrayList<File> fileList = (ArrayList<File>) evt.getTransferable()
+                                        .getTransferData(DataFlavor.javaFileListFlavor);
+                                for(File file : fileList) {
+                                    System.out.println(file.getPath());
+                                }
+                                evt.dropComplete(true);
+                            } catch (UnsupportedFlavorException e) {
+                                e.printStackTrace();
+                                evt.dropComplete(false);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                evt.dropComplete(false);
+                            }
+                        }
+                    } finally {
+                        imageLock.unlock();
+                    }
+                }
+            }
+        });
     }
 
     public void setPixel(int r, int g, int b, int x, int y) {
