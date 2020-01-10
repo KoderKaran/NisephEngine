@@ -41,6 +41,7 @@ public class Screen extends Canvas implements ComponentListener {
                         Rectangle screenRect = new Rectangle(0, 0, thisScreen.getWidth(), thisScreen.getHeight());
                         if (screenRect.contains(evt.getLocation())) {
                             try {
+                                System.out.println(dropLocation);
                                 evt.acceptDrop(DnDConstants.ACTION_MOVE);
                                 ArrayList<File> fileList = (ArrayList<File>) evt.getTransferable()
                                         .getTransferData(DataFlavor.javaFileListFlavor);
