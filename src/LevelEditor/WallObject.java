@@ -1,10 +1,14 @@
 package LevelEditor;
 
 public class WallObject extends GameObjectDecorator{
+	private GameObject gameObject;
 
 	public WallObject(BasicGameObject newGameObj) {
-		super(newGameObj);
-		super.configCollidability(5);
+		gameObject = newGameObj;
 	}
 
+	@Override
+	public void checkCollidability() {
+		//does something and also calls gameObjects checkCollidability method
+	}
 }

@@ -1,15 +1,7 @@
 package LevelEditor;
 
-public abstract class GameObjectDecorator implements GameObject{
-	protected BasicGameObject gameObj;
-
-	public GameObjectDecorator(BasicGameObject newGameObj){
-		gameObj = newGameObj;
-	}
+public abstract class GameObjectDecorator extends GameObject{
 	//all potential game object methods just do a call to the gameObj.,
-	public void configCollidability(double newCollidability){
-		gameObj.configCollidability(newCollidability);
-	}
-
+	public abstract void checkCollidability();
 
 }
