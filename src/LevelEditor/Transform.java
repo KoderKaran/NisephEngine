@@ -5,9 +5,9 @@ public class Transform {
 	private Vector2d rot;
 	private Vector2d scale;
 
-	public Transform(Vector2d position, Vector2d rotation, Vector2d scale){
+	public Transform(Vector2d position, Vector2d rotation, Vector2d newScale){
 		pos = position;
 		rot = rotation;
-		scale = scale;
+		scale = newScale;
 	}
 }
