@@ -1,9 +1,9 @@
 package LevelEditor;
-
-public class WallObject extends GameObjectDecorator{
+//TESTING
+public class WallDecorator extends GameObjectDecorator{
 	private GameObject gameObject;
 
-	public WallObject(BasicGameObject newGameObj) {
+	public WallDecorator(BasicGameObject newGameObj) {
 		gameObject = newGameObj;
 	}
 
