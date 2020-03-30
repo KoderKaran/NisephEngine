@@ -24,13 +24,15 @@ public class Screen extends Canvas implements ComponentListener {
     private int screenWidth;
     private int screenHeight;
     private BufferedImage image;
+    private Level level;
 
-    public Screen(int screenWidth, int screenHeight) {
+    public Screen(int screenWidth, int screenHeight, Level level) {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         image = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB);
         pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
         imageLock = new ReentrantLock(true);
+        this.level = level;
         Screen thisScreen = this;
         setDropTarget(new DropTarget() {
             public void drop(DropTargetDropEvent evt) {
@@ -42,10 +44,18 @@ public class Screen extends Canvas implements ComponentListener {
                         if (screenRect.contains(evt.getLocation())) {
                             try {
                                 evt.acceptDrop(DnDConstants.ACTION_MOVE);
+                                //Load asset into memory
+                                //Put asset in level
                                 ArrayList<File> fileList = (ArrayList<File>) evt.getTransferable()
                                         .getTransferData(DataFlavor.javaFileListFlavor);
                                 for(File file : fileList) {
-                                    System.out.println(file.getPath());
+
+                                    System.out.println("Passed in FROM: " + Thread.currentThread());
+                                    // TODO: The "File" objects should be passed to the Level class associated with this
+                                    //  screen instance. I guess that means that there is one level per screen. But the
+                                    //  converse doesn't have to be true if we want to draw the level in more than one place.
+                                    level.loadAssetIntoLevel(file);
+                                    System.out.println("PATH: " + file.getPath());
                                 }
                                 evt.dropComplete(true);
                             } catch (UnsupportedFlavorException e) {

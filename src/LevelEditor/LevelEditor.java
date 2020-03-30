@@ -14,7 +14,7 @@ public class LevelEditor {
     private static final int  HEIGHT = (int)(600 * SCALE);
 
     public static void main(String[] args) throws IOException {
-
+        Level level = new Level();
         TempSaver tempSaver = new TempSaver("Hello");
         tempSaver.updateTempConfig();
 
@@ -57,7 +57,7 @@ public class LevelEditor {
             @Override
             public void run() {
 
-                Screen screen = new Screen(WIDTH, 300);
+                Screen screen = new Screen(WIDTH, 300, level);
 
                 JPanel tab2 = new JPanel();
                 tab2.setName("tab2_JPanel");
