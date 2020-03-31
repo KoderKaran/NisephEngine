@@ -43,7 +43,6 @@ public class EventBus {
 
     private static void notifySubscribers(EngineEventObject e) {
         synchronized (SUB_LOCK) {
-            // TODO: Execute this in a separate thread.
             EngineEvent event = e.getEventType();
             for(Subscriber sub: subsSortedByEvent.get(event)) {
                 sub.handleEvent(e);

@@ -5,15 +5,16 @@ import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import LevelEditor.EngineEventObject.EngineEvent;
+import LevelEditor.Resource.ResourceType;
 
 public class ResourcePool implements Publisher { //
 
-    HashMap<String, Resource> resourcePool;
+    HashMap<File, Resource> resourcePool;
     LinkedBlockingQueue<File> resourceLoadQueue;
     Thread poolThread;
 
     public ResourcePool() {
-        resourcePool = new HashMap<String, Resource>();
+        resourcePool = new HashMap<File, Resource>();
         resourceLoadQueue = new LinkedBlockingQueue<File>();
         poolThread = new Thread() {
             public void run() {
@@ -28,20 +29,57 @@ public class ResourcePool implements Publisher { //
     }
 
     private void loadResourceFromQueue () {
-        try {
-            while (true) {
-                //Perform loading here.
-                File resource = resourceLoadQueue.take();
-                System.out.println("Resource to be loaded:" + resource);
-                System.out.println("Passed to: " + Thread.currentThread());
-                //TODO: LOAD, then publish that to the EventBus.
-                publish(EngineEvent.RESOURCE_LOAD, "DATA: Loaded " + resource);
+        while (true) {
+            try {
+                File fileResource = resourceLoadQueue.take();
+                String resourceName = fileResource.getName();
+                int dotIndex = resourceName.lastIndexOf('.');
+                String fileExtension;
+                if (dotIndex != -1) {
+                    fileExtension = resourceName.substring(dotIndex + 1);
+                } else {
+                    throw new IllegalArgumentException("ResourcePool->loadResourceFromQueue: Invalid file name, " +
+                            "no extension detected.");
+                }
+                Resource resource = null;
+                ResourceType resourceType = getResourceType(fileExtension);
+                switch (resourceType) {
+                    case IMAGE:
+                        resource = new ImageResource(fileResource);
+                        break;
+                    case AUDIO:
+                        break;
+                }
+                if (resource != null) {
+                    resourcePool.put(fileResource, resource);
+                } else {
+                    throw new NullPointerException("ResourcePool->loadResourceFromQueue: Resource type is null");
+                }
+                System.out.println("Resource Loaded Successfully:" + fileResource);
+                System.out.println("Loaded from: " + Thread.currentThread());
+                publish(EngineEvent.RESOURCE_LOAD, "DATA: Loaded " + fileResource);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                //e.printStackTrace();
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
-        //resourcePool.put(key,value)
-        System.out.println("Resource loaded from Asset Pool");
+    }
+
+    private ResourceType getResourceType(String fileExtension){
+        fileExtension = fileExtension.toLowerCase();
+        //// All supported formats for ImageIO.read()
+        if(fileExtension.equals("png") || fileExtension.equals("jpeg") || fileExtension.equals("gif") ||
+                fileExtension.equals("bmp") || fileExtension.equals("wbmp")) {
+            return ResourceType.IMAGE;
+        } else if(fileExtension.equals("wav")){
+            //TODO: Implement audio resource loading then determine actual supported formats.
+            return ResourceType.AUDIO;
+        } else {
+            return null;
+        }
     }
 
     public void unloadResource(){
