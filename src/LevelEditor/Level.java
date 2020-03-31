@@ -2,6 +2,7 @@ package LevelEditor;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import LevelEditor.EngineEventObject.EngineEvent;
@@ -10,6 +11,8 @@ public class Level implements Subscriber {
     // Is this sceneGraph? or does it contain it? It's 5 am. idek anymore.
     ResourcePool resourcePool;
     ArrayList<EngineEvent> subscriptions;
+    ArrayList<File> pendingResources;
+    final Object LOCK_FOR_PENDING = new Object();
     Thread eventHandler;
     private LinkedBlockingQueue<EngineEventObject> eventQueue;
     //GameObjects[] <---- For The level editor, this is what is
@@ -24,6 +27,7 @@ public class Level implements Subscriber {
         this.subscribe(EngineEvent.RESOURCE_LOAD);
         resourcePool = new ResourcePool();
         eventQueue = new LinkedBlockingQueue<EngineEventObject>();
+        pendingResources = new ArrayList<File>();
         eventHandler = new Thread() {
             public void run() {
                 try {
@@ -39,8 +43,20 @@ public class Level implements Subscriber {
         eventHandler.start();
     }
 
-    public void loadAssetIntoLevel(File asset/*, Vector2f position*/) { // TODO: Think of a less verbose name.
-        resourcePool.loadResource(asset);
+    public void loadAssetDnD(File asset/*, Vector2f position*/) { // TODO: Think of a less verbose name.
+        Resource resource = resourcePool.getResource(asset);
+        //System.out.println(resource);
+        if(resource != null){
+            //TODO: Do a thing. Like construct object.
+            return;
+        } else {
+            if(ResourcePool.getResourceType(asset) != null){
+                resourcePool.loadResource(asset);
+                synchronized (LOCK_FOR_PENDING) {
+                    pendingResources.add(asset);
+                }
+            }
+        }
     }
 
     @Override
@@ -66,8 +82,15 @@ public class Level implements Subscriber {
     private void handleEventsFromQueue(EngineEventObject e){
         switch(e.getEventType()) {
             case RESOURCE_LOAD:
-                System.out.println("Handler: " + e.getEventData().toString() + Thread.currentThread()); //TEST.
-                //TODO: Do something.
+                System.out.println("Handler: " + e.getEventData().toString() + Thread.currentThread());
+                File loadedFile = ((ImageResource) e.getEventData()).getImageFile();
+                synchronized (LOCK_FOR_PENDING) {
+                    if (pendingResources.contains(loadedFile)) {
+                        System.out.println(pendingResources);
+                        //TODO: Create the object and add it to the gameObject list for the level.
+                        pendingResources.remove(loadedFile);
+                    }
+                }
                 break;
         }
     }

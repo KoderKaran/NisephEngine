@@ -9,9 +9,11 @@ import LevelEditor.Resource.ResourceType;
 
 public class ResourcePool implements Publisher { //
 
-    HashMap<File, Resource> resourcePool;
-    LinkedBlockingQueue<File> resourceLoadQueue;
-    Thread poolThread;
+    private HashMap<File, Resource> resourcePool;   // Don't allow access to this from outer classes!
+                                                    // Needs to be synced!
+    private LinkedBlockingQueue<File> resourceLoadQueue;
+    private final Object RESOURCE_POOL_LOCK = new Object();
+    private Thread poolThread;
 
     public ResourcePool() {
         resourcePool = new HashMap<File, Resource>();
@@ -32,17 +34,8 @@ public class ResourcePool implements Publisher { //
         while (true) {
             try {
                 File fileResource = resourceLoadQueue.take();
-                String resourceName = fileResource.getName();
-                int dotIndex = resourceName.lastIndexOf('.');
-                String fileExtension;
-                if (dotIndex != -1) {
-                    fileExtension = resourceName.substring(dotIndex + 1);
-                } else {
-                    throw new IllegalArgumentException("ResourcePool->loadResourceFromQueue: Invalid file name, " +
-                            "no extension detected.");
-                }
                 Resource resource = null;
-                ResourceType resourceType = getResourceType(fileExtension);
+                ResourceType resourceType = getResourceType(fileResource);
                 switch (resourceType) {
                     case IMAGE:
                         resource = new ImageResource(fileResource);
@@ -51,13 +44,15 @@ public class ResourcePool implements Publisher { //
                         break;
                 }
                 if (resource != null) {
-                    resourcePool.put(fileResource, resource);
+                    synchronized (RESOURCE_POOL_LOCK) {
+                        resourcePool.put(fileResource, resource);
+                    }
                 } else {
                     throw new NullPointerException("ResourcePool->loadResourceFromQueue: Resource type is null");
                 }
                 System.out.println("Resource Loaded Successfully:" + fileResource);
                 System.out.println("Loaded from: " + Thread.currentThread());
-                publish(EngineEvent.RESOURCE_LOAD, "DATA: Loaded " + fileResource);
+                publish(EngineEvent.RESOURCE_LOAD, resource);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (IllegalArgumentException e) {
@@ -68,7 +63,13 @@ public class ResourcePool implements Publisher { //
         }
     }
 
-    private ResourceType getResourceType(String fileExtension){
+    public static ResourceType getResourceType(File file){ //Maybe move this method to a utility class eventually.
+        String resourceName = file.getName();
+        int dotIndex = resourceName.lastIndexOf('.');
+        String fileExtension = "";
+        if (dotIndex != -1) {
+            fileExtension = resourceName.substring(dotIndex + 1);
+        }
         fileExtension = fileExtension.toLowerCase();
         //// All supported formats for ImageIO.read()
         if(fileExtension.equals("png") || fileExtension.equals("jpeg") || fileExtension.equals("gif") ||
@@ -79,6 +80,12 @@ public class ResourcePool implements Publisher { //
             return ResourceType.AUDIO;
         } else {
             return null;
+        }
+    }
+
+    public Resource getResource(File key){
+        synchronized (RESOURCE_POOL_LOCK){
+            return resourcePool.get(key);
         }
     }
 

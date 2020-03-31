@@ -24,6 +24,10 @@ public class ImageResource implements Resource {
         return imageData;
     }
 
+    public File getImageFile(){
+        return imageFile;
+    }
+
     @Override
     public String getResourceName() {
         return imageName;

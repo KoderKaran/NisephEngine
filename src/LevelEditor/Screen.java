@@ -45,8 +45,6 @@ public class Screen extends Canvas implements ComponentListener {
                             try {
                                 System.out.println(dropLocation);
                                 evt.acceptDrop(DnDConstants.ACTION_MOVE);
-                                //Load asset into memory
-                                //Put asset in level
                                 ArrayList<File> fileList = (ArrayList<File>) evt.getTransferable()
                                         .getTransferData(DataFlavor.javaFileListFlavor);
                                 for(File file : fileList) {
@@ -55,7 +53,7 @@ public class Screen extends Canvas implements ComponentListener {
                                     // TODO: The "File" objects should be passed to the Level class associated with this
                                     //  screen instance. I guess that means that there is one level per screen. But the
                                     //  converse doesn't have to be true if we want to draw the level in more than one place.
-                                    level.loadAssetIntoLevel(file);
+                                    level.loadAssetDnD(file);
                                     System.out.println("PATH: " + file.getPath());
                                 }
                                 evt.dropComplete(true);
