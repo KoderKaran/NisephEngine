@@ -1,6 +1,7 @@
 package LevelEditor;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +36,13 @@ public class ImageResource implements Resource {
 
     private void loadImage(){
         try {
-            imageData = ImageIO.read(imageFile);
+            // The below shenanigans are necessary because we must
+            // ensure that the imageType is BufferedImage.TYPE_INT_RGB.
+            BufferedImage tempImage = ImageIO.read(imageFile);
+            imageData = new BufferedImage(tempImage.getWidth(), tempImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics g = imageData.getGraphics();
+            g.drawImage(tempImage, 0, 0, null);
+            g.dispose();
         } catch (IOException e) {
             //TODO: Implement proper handling if unable to load.
             System.out.println("Unable to load image with path: " + imageFilePath);

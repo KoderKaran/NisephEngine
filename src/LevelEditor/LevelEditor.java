@@ -14,7 +14,6 @@ public class LevelEditor {
     private static final int  HEIGHT = (int)(600 * SCALE);
 
     public static void main(String[] args) throws IOException {
-        Level level = new Level();
         TempSaver tempSaver = new TempSaver("Hello");
         tempSaver.updateTempConfig();
 
@@ -56,7 +55,7 @@ public class LevelEditor {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-
+                Level level = new Level();
                 Screen screen = new Screen(WIDTH, 300, level);
 
                 JPanel tab2 = new JPanel();
@@ -95,21 +94,21 @@ public class LevelEditor {
                 new Thread(new Runnable(){
                     @Override
                     public void run() {
-                        ReentrantLock imageLock = screen.getImageLock();
+                        ReentrantLock objLock = level.getObjectsInLevelLock();
+                        GameObject camera = new GameObject(0,0);
+                        Camera cameraComp = new Camera((double) 1/100, screen, camera);
+                        camera.addComponent(cameraComp);
+                        objLock.lock();
+                        try{
+                            level.getObjectsInLevel().add(camera);
+                        } finally{
+                            objLock.unlock();
+                        }
+                        int i = 0;
                         while(true) {
-                            imageLock.lock();
-                            try{
-                                for (int y = 0; y < screen.getHeight(); y++) {
-                                    for (int x = 0; x < screen.getWidth(); x++) {
-                                        int r = (int) (Math.random() * 255);
-                                        int g = (int) (Math.random() * 255);
-                                        int b = (int) (Math.random() * 255);
-                                        screen.setPixel(r, g, b, x, y);
-                                    }
-                                }
-                            } finally{
-                                imageLock.unlock();
-                            }
+                            //System.out.println("Times rendered: " + i);
+                            cameraComp.display(level);
+                            i++;
                         }
                     }
                 }).start();

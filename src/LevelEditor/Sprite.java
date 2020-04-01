@@ -1,40 +1,40 @@
 //TODO: Different package perhaps, seperate from GUI stuff.
 package LevelEditor;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-public class Sprite implements Asset{
+public class Sprite implements EngineComponent {
 
-    String imageTitle;
-    BufferedImage imageData;
-    File imageFile;
-    String path;
+    private GameObject parentGameObject;
+    private ImageResource img;
 
-    public Sprite(String _imagePath){
-        imageFile = new File(_imagePath);
-        path = imageFile.getAbsolutePath();
-        imageTitle = path.substring(path.lastIndexOf('\\') + 1);
-        try {
-            imageData = ImageIO.read(imageFile);
-        } catch (IOException e) {
-        }
+    public Sprite(ImageResource img, GameObject parentGameObject) {
+        this.parentGameObject = parentGameObject;
+        this.img = img;
     }
 
     @Override
-    public String getPathToAsset() {
-        return path;
+    public String getName() {
+        return "Sprite: " + img.getResourceName();
     }
 
     @Override
-    public Object getAssetData() {
-        return imageData;
+    public ComponentType getType() {
+        return ComponentType.SPRITE;
     }
 
-    public String getImageTitle(){
-        return imageTitle;
+    @Override
+    public GameObject getGameObject() {
+        return parentGameObject;
+    }
+
+    @Override
+    public Transform getTransform() {
+        return parentGameObject.getTransform();
+    }
+
+    public BufferedImage getImageData(){
+        return img.getResource();
     }
 }
 

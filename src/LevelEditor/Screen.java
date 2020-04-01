@@ -20,7 +20,7 @@ public class Screen extends Canvas implements ComponentListener {
     private int pixels[];
     private Thread thread;
     private AtomicBoolean keepRendering = new AtomicBoolean(true);
-    private ReentrantLock imageLock; // Use this lock anywhere that screenWidth and screenHeight are used.
+    private final ReentrantLock imageLock = new ReentrantLock(true);
     private int screenWidth;
     private int screenHeight;
     private BufferedImage image;
@@ -29,9 +29,9 @@ public class Screen extends Canvas implements ComponentListener {
     public Screen(int screenWidth, int screenHeight, Level level) {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+        level.setScreen(this); //This is ghetto af. TODO: Maybe notify or something but fix this.
         image = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB);
         pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
-        imageLock = new ReentrantLock(true);
         this.level = level;
         Screen thisScreen = this;
         setDropTarget(new DropTarget() {
@@ -75,6 +75,10 @@ public class Screen extends Canvas implements ComponentListener {
 
     public void setPixel(int r, int g, int b, int x, int y) {
         int color = (r << 16) | (g << 8) | b;
+        pixels[y * screenWidth + x] = color;
+    }
+
+    public void setPixel(int color, int x, int y) {
         pixels[y * screenWidth + x] = color;
     }
 

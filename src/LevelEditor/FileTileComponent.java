@@ -53,9 +53,9 @@ public class FileTileComponent extends JPanel {
             fileExtension = null;
         }
 
+        //TODO: In all of the catch statments of all the tries, assign a generic icon to the tileIcon.
         if(fileExtension == null && tileFile.isDirectory()){
             tileIcon = defaultFolderIcon;
-
         } else if (fileExtension.equalsIgnoreCase("JPEG") || fileExtension.equalsIgnoreCase("PNG") ||
                 fileExtension.equalsIgnoreCase("GIF") || fileExtension.equalsIgnoreCase("BMP")){
                 try {

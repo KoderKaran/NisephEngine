@@ -43,9 +43,6 @@ public class AssetPane extends JPanel {
             }
         }).start();
 
-        //JUST FOR TESTING//
-        Sprite testSprite = new Sprite(rootPath + "\\res\\64x64.png");
-
         //TODO: Big todo, have to implement custom layout that implement's wrap around feature for components.
 
         assetPaneContainer = new JPanel(new BorderLayout());

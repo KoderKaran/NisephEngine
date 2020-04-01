@@ -3,27 +3,41 @@ package LevelEditor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 import LevelEditor.EngineEventObject.EngineEvent;
 
 public class Level implements Subscriber {
     // Is this sceneGraph? or does it contain it? It's 5 am. idek anymore.
-    ResourcePool resourcePool;
-    ArrayList<EngineEvent> subscriptions;
-    ArrayList<File> pendingResources;
-    final Object LOCK_FOR_PENDING = new Object();
-    Thread eventHandler;
+    private ResourcePool resourcePool;
+    private ArrayList<EngineEvent> subscriptions;
+    private ArrayList<File> pendingResources;
+    private final Object LOCK_FOR_PENDING = new Object();
+    private Thread eventHandler;
     private LinkedBlockingQueue<EngineEventObject> eventQueue;
-    //GameObjects[] <---- For The level editor, this is what is
-    // going to be populated do display the stuff in the menu. If we populate this through
-    // the drag-and-drop feature, then we can simply pass it to the Screen class and have it render
-    // all of the objects in this array.
-    Screen[] views; // Is an array just in case we want to draw the Level in more than one place.
+    private final ReentrantLock objectsInLevelLock = new ReentrantLock(true);;
+
+    public ArrayList<GameObject> getObjectsInLevel() {
+        return objectsInLevel;
+    }
+
+    public ReentrantLock getObjectsInLevelLock(){
+        return objectsInLevelLock;
+    }
+
+    public void setScreen(Screen screen) {
+        this.screen = screen;
+    }
+
+    private ArrayList<GameObject> objectsInLevel; // Always lock when using the "objectsInLevelLock".
+    private Screen screen;
 
     public Level() {
-
+        objectsInLevel = new ArrayList<GameObject>();
         subscriptions = new ArrayList<EngineEvent>();
+        screen = null; //TODO: Omg fix.
         this.subscribe(EngineEvent.RESOURCE_LOAD);
         resourcePool = new ResourcePool();
         eventQueue = new LinkedBlockingQueue<EngineEventObject>();
@@ -45,17 +59,30 @@ public class Level implements Subscriber {
 
     public void loadAssetDnD(File asset/*, Vector2f position*/) { // TODO: Think of a less verbose name.
         Resource resource = resourcePool.getResource(asset);
-        //System.out.println(resource);
-        if(resource != null){
-            //TODO: Do a thing. Like construct object.
+        if(resource != null) {
+            // For now this is fine if kept simple, but it should
+            // probably eventually be moved to a separate thread.
+            GameObject obj = new GameObject(0,0);
+            obj.addComponent(new Sprite((ImageResource) resource, obj));
+            addObjectToLevel(obj);
+            System.out.println("From loadAssetDnD: " + objectsInLevel);
             return;
         } else {
-            if(ResourcePool.getResourceType(asset) != null){
+            if(ResourcePool.getResourceType(asset) != null) {
                 resourcePool.loadResource(asset);
                 synchronized (LOCK_FOR_PENDING) {
                     pendingResources.add(asset);
                 }
             }
+        }
+    }
+
+    private void addObjectToLevel(GameObject object){
+        objectsInLevelLock.lock();
+        try {
+            objectsInLevel.add(object);
+        } finally {
+            objectsInLevelLock.unlock();
         }
     }
 
@@ -87,11 +114,15 @@ public class Level implements Subscriber {
                 synchronized (LOCK_FOR_PENDING) {
                     if (pendingResources.contains(loadedFile)) {
                         System.out.println(pendingResources);
-                        //TODO: Create the object and add it to the gameObject list for the level.
+                        GameObject obj = new GameObject(0,0);
+                        obj.addComponent(new Sprite((ImageResource) e.getEventData(), obj));
+                        addObjectToLevel(obj);
+                        System.out.println(objectsInLevel);
                         pendingResources.remove(loadedFile);
                     }
                 }
                 break;
         }
     }
+
 }
