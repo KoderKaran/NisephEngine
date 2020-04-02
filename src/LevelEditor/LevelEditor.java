@@ -94,6 +94,12 @@ public class LevelEditor {
                 new Thread(new Runnable(){
                     @Override
                     public void run() {
+                        try{
+                            Thread.sleep(1000); // waiting for screen to be fully initialized,
+                                                      // 1 sec is just estimate.
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         ReentrantLock objLock = level.getObjectsInLevelLock();
                         GameObject camera = new GameObject(0,0);
                         Camera cameraComp = new Camera((double) 1/100, screen, camera);
