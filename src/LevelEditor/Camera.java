@@ -1,5 +1,8 @@
 package LevelEditor;
 
+import org.w3c.dom.css.Rect;
+
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -15,17 +18,16 @@ public class Camera implements EngineComponent {
     private double pixelsPerWorldUnit;
     private Screen displayScreen;
 
-    public Camera(double worldUnitsPerPixel, Screen displayScreen, GameObject parentGameObject ){
+    public Camera(double worldUnitsPerPixel, double viewPortWidth, double viewPortHeight, Screen displayScreen, GameObject parentGameObject ){
         this.worldUnitsPerPixel = worldUnitsPerPixel;   // Example: "1/100" would mean for every
                                                         // 1 unit there is 100 pixels.
         this.pixelsPerWorldUnit = ((double) 1) / worldUnitsPerPixel;
-        System.out.println(pixelsPerWorldUnit);
         this.displayScreen = displayScreen;
         Transform parentTransform = parentGameObject.getTransform();
         double transformX = parentTransform.pos.getX();
         double transformY = parentTransform.pos.getY();
         cameraViewport = new Viewport(transformX, transformY, displayScreen.getWidth() * worldUnitsPerPixel,
-                displayScreen.getHeight() * worldUnitsPerPixel ); //TODO: Fix this.
+                displayScreen.getHeight() * worldUnitsPerPixel );
         System.out.println("screenWidth: " + displayScreen.getWidth());   ///WHY IS THIS NOT THE CORRECT SCREEN SIZE???
         System.out.println("screenHeight: " + displayScreen.getHeight()); ///WHY IS THIS NOT THE CORRECT SCREEN SIZE???
         System.out.println(cameraViewport.viewport);
@@ -49,40 +51,52 @@ public class Camera implements EngineComponent {
             for(GameObject obj: objects){
                 for(EngineComponent component: obj.getComponents()){
                     if(component.getType().equals(ComponentType.SPRITE)){
-                        double tlX = component.getTransform().pos.getX();
-                        double tlY = component.getTransform().pos.getY();
-                        double width = ((Sprite) component).getImageData().getWidth() * worldUnitsPerPixel;
-                        double height = ((Sprite) component).getImageData().getHeight() * worldUnitsPerPixel;
-                        Rectangle2D.Double sourceImageBounds = new Rectangle2D.Double(tlX, tlY, width, height);
-                        if(sourceImageBounds.intersects(cameraViewport.viewport)){
-                            Rectangle2D.Double intersection
-                                    = (Rectangle2D.Double) sourceImageBounds.createIntersection(cameraViewport.viewport);
+                        Sprite sprite = (Sprite) component;
+                        Viewport srcViewport = sprite.getSpriteBounds();
+                        if(srcViewport.intersects(cameraViewport.viewport)) {
+                            Viewport intersection = srcViewport.createIntersection(cameraViewport.viewport);
                             final ReentrantLock imageLock = displayScreen.getImageLock();
                             imageLock.lock();
                             try{
-                                BufferedImage spriteImageData = ((Sprite) component).getImageData();
+                                BufferedImage spriteImageData = sprite.getImageData();
                                 final int[] imgData = ((DataBufferInt)spriteImageData.getRaster().
                                         getDataBuffer()).getData();
-
-                                double xDestWorldDisplacement = Math.abs((cameraViewport.viewport.x - intersection.x));
-                                double yDestWorldDisplacement = Math.abs((cameraViewport.viewport.y - intersection.y));
+                                double xDestWorldDisplacement = Math.abs((cameraViewport.viewport.x - intersection.getX()));
+                                double yDestWorldDisplacement = Math.abs((cameraViewport.viewport.y - intersection.getY()));
                                 int xDestPxStart = (int) Math.floor(xDestWorldDisplacement * pixelsPerWorldUnit);
-                                int xDestPxEnd = (int) Math.floor((xDestWorldDisplacement + intersection.width) * pixelsPerWorldUnit);
+                                int xDestPxEnd = (int) Math.floor((xDestWorldDisplacement + intersection.getWidth()) * pixelsPerWorldUnit);
                                 int yDestPxStart = (int) Math.floor(yDestWorldDisplacement * pixelsPerWorldUnit);
-                                int yDestPxEnd = (int) Math.floor((yDestWorldDisplacement + intersection.height) * pixelsPerWorldUnit);
+                                int yDestPxEnd = (int) Math.floor((yDestWorldDisplacement + intersection.getHeight()) * pixelsPerWorldUnit);
 
-                                double xSrcWorldDisplacement = Math.abs((sourceImageBounds.x - intersection.x));
-                                double ySrcWorldDisplacement = Math.abs((sourceImageBounds.y - intersection.y));
-                                int xSrcPxStart = (int) Math.floor(xSrcWorldDisplacement * pixelsPerWorldUnit);
-                                int ySrcPxStart = (int) Math.floor(ySrcWorldDisplacement * pixelsPerWorldUnit);
+                                double xSrcWorldDisplacement = Math.abs((srcViewport.getX() - intersection.getX()));
+                                double ySrcWorldDisplacement = Math.abs((srcViewport.getY() - intersection.getY()));
+                                int xSrcPxStart = (int) Math.floor(xSrcWorldDisplacement * (1/sprite.getWorldToPxRatio()));
+                                int xSrcPxEnd = (int) Math.floor((xSrcWorldDisplacement + intersection.getWidth()) * (1/sprite.getWorldToPxRatio()));
+                                int ySrcPxStart = (int) Math.floor(ySrcWorldDisplacement * (1/sprite.getWorldToPxRatio()));
+                                int ySrcPxEnd = (int) Math.floor((ySrcWorldDisplacement + intersection.getHeight()) * (1/sprite.getWorldToPxRatio()));
 
-                                for(int yDest = yDestPxStart, ySrc = ySrcPxStart; yDest < yDestPxEnd; yDest++,ySrc++){
-                                    for(int xDest = xDestPxStart, xSrc = xSrcPxStart; xDest < xDestPxEnd; xDest++,xSrc++){
+                                System.out.println("xDestPxStart: " + xDestPxStart);
+                                System.out.println("xDestPxEnd: " + xDestPxEnd);
+                                System.out.println("yDestPxStart: " + yDestPxStart);
+                                System.out.println("yDestPxEnd: " + yDestPxEnd);
 
-                                        int srcPixel = imgData[ySrc * spriteImageData.getWidth() + xSrc];
-                                        displayScreen.setPixel(srcPixel, xDest, yDest);
-                                        //System.out.println("x: " + x);
-                                        //System.out.println("y: " + y);
+                                double xSrcStep = 1;
+                                double ySrcStep = 1;
+                                double xDestStep = 1;
+                                double yDestStep = 1;
+                                // Zoom in = Src grows slower than Dest
+                                // Zoom out = Src grows faster than Dest
+                                for(double yDest = yDestPxStart, ySrc = ySrcPxStart; yDest < yDestPxEnd && ySrc < ySrcPxEnd;
+                                    yDest = yDest + yDestStep, ySrc = ySrc + ySrcStep){
+                                    for(double xDest = xDestPxStart, xSrc = xSrcPxStart; xDest < xDestPxEnd && xSrc < xSrcPxEnd;
+                                        xDest = xDest + xDestStep, xSrc = xSrc + xSrcStep) {
+                                        int xSrcPx = (int) Math.floor(xSrc);
+                                        int ySrcPx = (int) Math.floor(ySrc);
+                                        int srcPixel = imgData[ySrcPx * spriteImageData.getWidth() + xSrcPx];
+
+                                        int xDestPx = (int) Math.floor(xDest);
+                                        int yDestPx = (int) Math.floor(yDest);
+                                        displayScreen.setPixel(srcPixel, xDestPx, yDestPx);
                                     }
                                 }
                             } finally {
@@ -120,14 +134,5 @@ public class Camera implements EngineComponent {
     @Override
     public Transform getTransform() {
         return parentGameObject.getTransform();
-    }
-
-    private class Viewport{
-
-       //These parameters are in game units.
-        public Rectangle2D.Double viewport;
-        public Viewport(double tlX, double tlY, double width, double height) {
-            viewport = new Rectangle2D.Double(tlX, tlY, width, height);
-        }
     }
 }

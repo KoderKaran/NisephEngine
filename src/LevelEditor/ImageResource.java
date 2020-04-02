@@ -25,13 +25,26 @@ public class ImageResource implements Resource {
         return imageData;
     }
 
+    @Override
+    public String getResourceName() {
+        return imageName;
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.IMAGE;
+    }
+
     public File getImageFile(){
         return imageFile;
     }
 
-    @Override
-    public String getResourceName() {
-        return imageName;
+    public int getWidth(){
+        return imageData.getWidth();
+    }
+
+    public int getHeight(){
+        return imageData.getHeight();
     }
 
     private void loadImage(){
@@ -49,8 +62,4 @@ public class ImageResource implements Resource {
         }
     }
 
-    @Override
-    public ResourceType getResourceType() {
-        return ResourceType.IMAGE;
-    }
 }

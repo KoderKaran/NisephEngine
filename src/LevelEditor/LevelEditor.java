@@ -102,7 +102,7 @@ public class LevelEditor {
                         }
                         ReentrantLock objLock = level.getObjectsInLevelLock();
                         GameObject camera = new GameObject(0,0);
-                        Camera cameraComp = new Camera((double) 1/100, screen, camera);
+                        Camera cameraComp = new Camera((double) 1/100, 4,4, screen, camera);
                         camera.addComponent(cameraComp);
                         objLock.lock();
                         try{
