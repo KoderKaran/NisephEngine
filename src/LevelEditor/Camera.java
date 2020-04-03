@@ -59,33 +59,98 @@ public class Camera implements EngineComponent {
                             imageLock.lock();
                             try{
                                 BufferedImage spriteImageData = sprite.getImageData();
-                                final int[] imgData = ((DataBufferInt)spriteImageData.getRaster().
+                                final int[] srcImgData = ((DataBufferInt)spriteImageData.getRaster().
                                         getDataBuffer()).getData();
-                                double xDestWorldDisplacement = Math.abs((cameraViewport.viewport.x - intersection.getX()));
-                                double yDestWorldDisplacement = Math.abs((cameraViewport.viewport.y - intersection.getY()));
-                                int xDestPxStart = (int) Math.floor(xDestWorldDisplacement * pixelsPerWorldUnit);
-                                int xDestPxEnd = (int) Math.floor((xDestWorldDisplacement + intersection.getWidth()) * pixelsPerWorldUnit);
-                                int yDestPxStart = (int) Math.floor(yDestWorldDisplacement * pixelsPerWorldUnit);
-                                int yDestPxEnd = (int) Math.floor((yDestWorldDisplacement + intersection.getHeight()) * pixelsPerWorldUnit);
 
-                                double xSrcWorldDisplacement = Math.abs((srcViewport.getX() - intersection.getX()));
-                                double ySrcWorldDisplacement = Math.abs((srcViewport.getY() - intersection.getY()));
-                                int xSrcPxStart = (int) Math.floor(xSrcWorldDisplacement * (1/sprite.getWorldToPxRatio()));
-                                int xSrcPxEnd = (int) Math.floor((xSrcWorldDisplacement + intersection.getWidth()) * (1/sprite.getWorldToPxRatio()));
-                                int ySrcPxStart = (int) Math.floor(ySrcWorldDisplacement * (1/sprite.getWorldToPxRatio()));
-                                int ySrcPxEnd = (int) Math.floor((ySrcWorldDisplacement + intersection.getHeight()) * (1/sprite.getWorldToPxRatio()));
+                                int xWorldDisplacementCamera = (int) Math.abs(cameraViewport.getX()
+                                        - intersection.getX());
+                                int yWorldDisplacementCamera = (int) Math.abs(cameraViewport.getY()
+                                        - intersection.getY());
+                                int xCameraPxStart = (int) Math.floor(xWorldDisplacementCamera * pixelsPerWorldUnit);
+                                int xCameraPxEnd = (int) Math.floor((xWorldDisplacementCamera + intersection.getWidth())
+                                        * pixelsPerWorldUnit);
+                                int yCameraPxStart = (int) Math.floor(yWorldDisplacementCamera * pixelsPerWorldUnit);
+                                int yCameraPxEnd = (int) Math.floor((yWorldDisplacementCamera + intersection.getHeight())
+                                        * pixelsPerWorldUnit);
+                                //---
+                                int xWorldDisplacementSprite = (int) Math.abs(sprite.getSpriteBounds().getX()
+                                        - intersection.getX());
+                                int yWorldDisplacementSprite = (int) Math.abs(sprite.getSpriteBounds().getY()
+                                        - intersection.getY());
+                                int xSpritePxStart = (int) Math.floor(xWorldDisplacementSprite
+                                        * (1d/sprite.getWorldToPxRatio()));
+                                int xSpritePxEnd = (int) Math.floor((xWorldDisplacementSprite + intersection.getWidth())
+                                        * (1d/sprite.getWorldToPxRatio()));
+                                int ySpritePxStart = (int) Math.floor(yWorldDisplacementSprite
+                                        * (1d/sprite.getWorldToPxRatio()));
+                                int ySpritePxEnd = (int) Math.floor((yWorldDisplacementSprite + intersection.getHeight())
+                                        * (1d/sprite.getWorldToPxRatio()));
+                                //---
+                                //-----
+                                int interCameraPixelLen = (int) Math.floor(xCameraPxEnd - xCameraPxStart);
+                                int interCameraPixelHeight = (int) Math.floor(yCameraPxEnd - yCameraPxStart);
+                                int interSpritePixelLen = (int) Math.floor(xSpritePxEnd - xSpritePxStart);
+                               // int interCameraPxHeight = (int) Math.floor(intersection.getHeight() * pixelsPerWorldUnit);
+                               // int interSpritePxHeight = (int) Math.floor(intersection.getHeight()
+                               //         * (1d/sprite.getWorldToPxRatio()));
+                                //-----
+                                double spritePxStepX = ((double) interSpritePixelLen) / interCameraPixelLen;
+                                //double spritePxStepY = ((double) interSpritePxHeight) / interCameraPxHeight;
 
-                                System.out.println("xDestPxStart: " + xDestPxStart);
-                                System.out.println("xDestPxEnd: " + xDestPxEnd);
-                                System.out.println("yDestPxStart: " + yDestPxStart);
-                                System.out.println("yDestPxEnd: " + yDestPxEnd);
+                                double spritePxX = ySpritePxStart * sprite.getWidth() + xSpritePxStart;
+                                //double spritePxY = spritePxStepY * sprite.getHeight() + ySpritePxStart;
+                                Viewport vp = sprite.getSpriteBounds();
 
-                                double xSrcStep = 1;
-                                double ySrcStep = 1;
-                                double xDestStep = 1;
-                                double yDestStep = 1;
-                                // Zoom in = Src grows slower than Dest
-                                // Zoom out = Src grows faster than Dest
+                                double scaleFactor = ((double) interCameraPixelLen) / interSpritePixelLen ;
+                                int remainingLengthBefore = xCameraPxStart;
+                                int remainingLengthAfter = Math.abs(displayScreen.getWidth() - xCameraPxEnd);
+                                int yOffset = yCameraPxStart * displayScreen.getWidth();
+                                for(int y = ySpritePxStart; y < ySpritePxEnd; y++) {
+                                    if(scaleFactor < 1 && y % 2 == 1) continue;
+                                    for (int x = xSpritePxStart; x < xSpritePxEnd; x++) {
+                                        int color = srcImgData[y * sprite.getWidth() + x];
+                                        int baseIndex = (int) Math.floor(
+                                                remainingLengthBefore
+                                                + x * scaleFactor
+                                                + y * remainingLengthAfter
+                                                + y * remainingLengthBefore
+                                                + y * displayScreen.getWidth()
+                                                + y * interCameraPixelLen
+                                                + yOffset);
+                                        for(int j = 0; j < scaleFactor; j++){
+                                            for(int k = 0; k < scaleFactor; k++){
+                                                int someWidth = interCameraPixelLen
+                                                        + remainingLengthAfter + remainingLengthBefore;
+                                                int index = baseIndex +  j * someWidth + k;
+                                                displayScreen.setPixel(color, index);
+                                            }
+                                        }
+                                    }
+                                }
+
+
+
+
+
+
+
+
+
+                                /*
+                                for(int y = yCameraPxStart; y < yCameraPxEnd; y++){
+                                    for(int x = xCameraPxStart; x < xCameraPxEnd; x++){
+                                        int color = srcImgData[(int) Math.floor(spritePxX)];
+                                        displayScreen.setPixel(color, x, y);
+                                        spritePxX = spritePxX + spritePxStepX;
+                                        //System.out.println("Doing things");
+                                    }
+
+
+                                    //spritePxY = spritePxY + spritePxStepY;
+                                    System.out.println(y);
+                                }
+/*
+
                                 for(double yDest = yDestPxStart, ySrc = ySrcPxStart; yDest < yDestPxEnd && ySrc < ySrcPxEnd;
                                     yDest = yDest + yDestStep, ySrc = ySrc + ySrcStep){
                                     for(double xDest = xDestPxStart, xSrc = xSrcPxStart; xDest < xDestPxEnd && xSrc < xSrcPxEnd;
@@ -99,6 +164,8 @@ public class Camera implements EngineComponent {
                                         displayScreen.setPixel(srcPixel, xDestPx, yDestPx);
                                     }
                                 }
+                                     */
+
                             } finally {
                                 imageLock.unlock();
                             }

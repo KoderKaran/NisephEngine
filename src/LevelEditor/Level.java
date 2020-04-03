@@ -114,7 +114,7 @@ public class Level implements Subscriber {
                 synchronized (LOCK_FOR_PENDING) {
                     if (pendingResources.contains(loadedFile)) {
                         System.out.println(pendingResources);
-                        GameObject obj = new GameObject(0,0);
+                        GameObject obj = new GameObject(1,1);
                         obj.addComponent(new Sprite((ImageResource) e.getEventData(), obj));
                         addObjectToLevel(obj);
                         System.out.println(objectsInLevel);

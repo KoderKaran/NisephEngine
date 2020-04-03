@@ -18,7 +18,7 @@ public class Sprite implements EngineComponent {
     }
 
     public Sprite(ImageResource img, GameObject parentGameObject) {
-        this(img, parentGameObject, 1d/100d );
+        this(img, parentGameObject, 1d/50d );
     }
 
     @Override
@@ -45,6 +45,8 @@ public class Sprite implements EngineComponent {
         return img.getResource();
     }
 
+    //TODO: Rename to getImgWidth so its more clear that were getting local image coordinates in pixels
+    // and not  the viewport width in world units.
     public int getWidth(){
         return img.getWidth();
     }

@@ -82,6 +82,10 @@ public class Screen extends Canvas implements ComponentListener {
         pixels[y * screenWidth + x] = color;
     }
 
+    public void setPixel(int color, int index) {
+        pixels[index] = color;
+    }
+
     public BufferedImage getImage() {
         return image;
     }
