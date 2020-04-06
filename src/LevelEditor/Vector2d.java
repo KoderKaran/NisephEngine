@@ -12,21 +12,21 @@ public class Vector2d {
 
 	//Adding two vectors (A and B) takes you from the start of A to the end of B. (Hypotenuse of a triangle). Can work with many vectors.
 	public Vector2d add(Vector2d vecToAdd){
-		return new Vector2d(x+vecToAdd.getX(), y+vecToAdd.getY());
+		return new Vector2d(x + vecToAdd.getX(), y + vecToAdd.getY());
 	}
 
 	//If going from point A to point B, subtract the coordinates of A from the coordinates of B. (B-A)
-	public Vector2d subtract(Vector2d vecToSub){
-		return new Vector2d(x-vecToSub.getX(), y-vecToSub.getY());
+	public Vector2d sub(Vector2d vecToSub){
+		return new Vector2d(x - vecToSub.getX(), y - vecToSub.getY());
 	}
 
 	//Pass -1 to change direction
-	public Vector2d scalarMult(double scalar) {
+	public Vector2d scalarMul(double scalar) {
 		return new Vector2d(x * scalar, y * scalar);
 	}
 
-	public double dotProduct(Vector2d vecToMult) {
-		return (x*vecToMult.getX())+(y*vecToMult.getX());
+	public double dotProduct(Vector2d vecToMul) {
+		return (x * vecToMul.getX()) + (y * vecToMul.getX());
 	}
 
 	public double getY() {
